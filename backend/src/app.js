@@ -8,6 +8,7 @@ require('dotenv').config();
 
 const { connectDB } = require('./utils/database');
 const { connectRedis } = require('./utils/redis');
+const { initDatabase } = require('./utils/initDatabase');
 const errorHandler = require('./middleware/errorHandler');
 const rateLimiter = require('./middleware/rateLimiter');
 
@@ -78,6 +79,9 @@ async function startServer() {
     // 连接数据库
     await connectDB();
     console.log('✅ Database connected successfully');
+
+    // 初始化数据库表结构
+    await initDatabase();
 
     // 连接 Redis
     await connectRedis();

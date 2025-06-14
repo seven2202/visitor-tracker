@@ -1,40 +1,53 @@
 # Visit Tracker 部署
 
-## 真正的一键部署
+## 🚀 一键部署
 
 ```bash
-# 1. 前端
-cd frontend && npm install && npm run build && cd ..
-
-# 2. 后端
-cd backend && npm install && cd ..
-
-# 3. 数据库
-docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=123456 -e POSTGRES_DB=visit_tracker postgres:15
-
-# 4. 配置
-echo "DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=visit_tracker
-DB_USER=postgres
-DB_PASSWORD=123456
-PORT=3000
-JWT_SECRET=secret123" > backend/.env
-
-# 5. 启动
-cd backend && npm start
+./deploy.sh
 ```
 
-## 访问
+就这么简单！脚本会自动：
+
+1. ✅ 启动 PostgreSQL 数据库
+2. ✅ 配置环境变量
+3. ✅ 构建前端
+4. ✅ 复制前端文件
+5. ✅ 启动后端（自动初始化数据库）
+
+## 🌟 新特性：自动数据库初始化
+
+后端启动时会自动：
+- 检查数据库表是否存在
+- 如果不存在，自动创建所有表
+- 插入默认管理员用户
+- 插入示例网站数据
+
+**不需要手动执行任何 SQL 脚本！**
+
+## 🌐 访问
 
 http://localhost:3000
 
-用户名: admin, 密码: password
+**默认登录：**
+- 用户名: `admin`
+- 密码: `password`
 
-## 停止
+## 🛑 停止服务
 
 ```bash
-docker stop postgres
+# 停止后端
+lsof -ti:3000 | xargs kill -9
+
+# 停止数据库
+docker stop visit-tracker-db
 ```
 
-就这样，不需要复杂的脚本。
+## 🔄 重新部署
+
+```bash
+# 完全重新开始
+docker rm -f visit-tracker-db
+./deploy.sh
+```
+
+**真正的一键部署，零配置！** 🎉
