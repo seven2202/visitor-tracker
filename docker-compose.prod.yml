@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Visit Tracker 应用
+  app:
+    image: seven222/visit-tracker:latest
+    container_name: visit-tracker-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # 数据库配置
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: visit_tracker
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      
+      # Redis 配置
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis123
+      
+      # 应用配置
+      PORT: 3000
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      API_KEY_PREFIX: sk-vt
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - visit-tracker-network
+
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: visit-tracker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: visit_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d visit_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - visit-tracker-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: visit-tracker-redis
+    restart: unless-stopped
+    command: redis-server --requirepass redis123 --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis123", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - visit-tracker-network
+
+# 数据卷
+volumes:
+  postgres_data:
+    driver: local
+    name: visit-tracker-postgres-data
+  redis_data:
+    driver: local
+    name: visit-tracker-redis-data
+
+# 网络
+networks:
+  visit-tracker-network:
+    driver: bridge
+    name: visit-tracker-network
