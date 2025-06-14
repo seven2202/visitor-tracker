@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visit Tracker 演示页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+        }
+        
+        .header h1 {
+            margin: 0 0 16px 0;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            margin: 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: white;
+            padding: 32px;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin: 16px 0;
+        }
+        
+        .button {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .button:hover {
+            background: #2980b9;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #3498db;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+    
+    <!-- Visit Tracker 统计代码 -->
+    <script>
+        // 配置统计参数
+        window.VISIT_TRACKER_API = 'http://localhost/api/track';
+        window.VISIT_TRACKER_KEY = 'demo_api_key_12345'; // 请替换为你的 API Key
+        window.VISIT_TRACKER_DEBUG = true; // 开发环境可以开启调试
+    </script>
+    <script src="http://localhost/sdk/tracker.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Visit Tracker</h1>
+        <p>轻量级网站访问统计系统演示页面</p>
+    </div>
+
+    <div class="section">
+        <h2>📊 实时统计</h2>
+        <p>这个页面已经集成了 Visit Tracker 统计代码，你的访问已经被记录。</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="page-views">-</div>
+                <div class="stat-label">页面浏览量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="unique-visitors">-</div>
+                <div class="stat-label">独立访客</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="online-users">-</div>
+                <div class="stat-label">在线用户</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔧 集成方法</h2>
+        <p>在你的网站中添加以下代码即可开始统计：</p>
+        
+        <div class="code-block">
+&lt;!-- 在 &lt;/head&gt; 标签前添加 --&gt;
+&lt;script&gt;
+  window.VISIT_TRACKER_API = 'http://your-domain.com/api/track';
+  window.VISIT_TRACKER_KEY = 'your-api-key-here';
+&lt;/script&gt;
+&lt;script src="http://your-domain.com/sdk/tracker.js"&gt;&lt;/script&gt;
+        </div>
+        
+        <div class="highlight">
+            <strong>注意：</strong> 请将 <code>your-api-key-here</code> 替换为你在管理后台获取的真实 API Key。
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>✨ 功能特性</h2>
+        <ul>
+            <li><strong>轻量级</strong> - 压缩后仅几KB，不影响页面加载速度</li>
+            <li><strong>实时统计</strong> - 实时收集和展示访问数据</li>
+            <li><strong>隐私友好</strong> - 不使用第三方跟踪器，数据完全自主控制</li>
+            <li><strong>多维度分析</strong> - 支持页面、来源、地理位置等多维度统计</li>
+            <li><strong>易于集成</strong> - 只需一行代码即可完成集成</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🎯 自定义事件</h2>
+        <p>除了自动统计页面访问，你还可以手动跟踪自定义事件：</p>
+        
+        <div class="code-block">
+// 跟踪按钮点击
+VisitTracker.track('button_click', {
+  button_name: 'download',
+  page: 'homepage'
+});
+
+// 跟踪表单提交
+VisitTracker.track('form_submit', {
+  form_type: 'contact',
+  success: true
+});
+        </div>
+        
+        <button class="button" onclick="trackCustomEvent()">
+            点击测试自定义事件
+        </button>
+    </div>
+
+    <div class="section">
+        <h2>📱 管理后台</h2>
+        <p>访问管理后台查看详细的统计数据和分析报告：</p>
+        <a href="http://localhost" class="button" target="_blank">
+            打开管理后台
+        </a>
+        <p style="margin-top: 16px; color: #666; font-size: 0.9em;">
+            默认登录信息 - 用户名: admin, 密码: password
+        </p>
+    </div>
+
+    <script>
+        // 自定义事件示例
+        function trackCustomEvent() {
+            if (window.VisitTracker) {
+                VisitTracker.track('demo_button_click', {
+                    timestamp: new Date().toISOString(),
+                    page: 'demo'
+                });
+                alert('自定义事件已发送！请在管理后台查看数据。');
+            } else {
+                alert('Visit Tracker 未加载，请检查配置。');
+            }
+        }
+        
+        // 模拟统计数据显示（实际项目中应该从 API 获取）
+        function updateStats() {
+            document.getElementById('page-views').textContent = Math.floor(Math.random() * 1000) + 100;
+            document.getElementById('unique-visitors').textContent = Math.floor(Math.random() * 500) + 50;
+            document.getElementById('online-users').textContent = Math.floor(Math.random() * 20) + 1;
+        }
+        
+        // 页面加载完成后更新统计数据
+        window.addEventListener('load', function() {
+            setTimeout(updateStats, 1000);
+            // 每30秒更新一次在线用户数
+            setInterval(function() {
+                document.getElementById('online-users').textContent = Math.floor(Math.random() * 20) + 1;
+            }, 30000);
+        });
+        
+        // 页面停留时间演示
+        let startTime = Date.now();
+        window.addEventListener('beforeunload', function() {
+            let duration = Math.floor((Date.now() - startTime) / 1000);
+            console.log('页面停留时间:', duration, '秒');
+        });
+    </script>
+</body>
+</html>

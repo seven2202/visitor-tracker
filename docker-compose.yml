@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: visit-tracker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: visit_tracker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d visit_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: visit-tracker-redis
+    restart: unless-stopped
+    command: redis-server --requirepass redis123 --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+# 数据卷
+volumes:
+  postgres_data:
+    driver: local
+    name: visit-tracker-postgres-data
+  redis_data:
+    driver: local
+    name: visit-tracker-redis-data

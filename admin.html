@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visit Tracker 管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .website-item {
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            background: #f8f9fa;
+        }
+
+        .website-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .website-info h3 {
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .website-info .domain {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .api-key-section {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .api-key-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .api-key-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .api-key-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3498db;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Visit Tracker 管理后台</h1>
+            <button class="btn" onclick="showAddModal()">+ 添加网站</button>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="card">
+            <h2>网站管理</h2>
+            <p>管理你的网站和 API Key</p>
+            
+            <div id="websites-list">
+                <!-- 网站列表将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加网站模态框 -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h3>添加新网站</h3>
+            <form id="addForm">
+                <div class="form-group">
+                    <label>网站名称</label>
+                    <input type="text" id="siteName" placeholder="例如：我的博客" required>
+                </div>
+                <div class="form-group">
+                    <label>域名</label>
+                    <input type="text" id="siteDomain" placeholder="例如：myblog.com" required>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn" onclick="hideAddModal()">取消</button>
+                    <button type="submit" class="btn">添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let authToken = null;
+
+        // 页面加载时初始化
+        window.addEventListener('load', function() {
+            login();
+        });
+
+        // 自动登录
+        async function login() {
+            try {
+                showStatus('正在连接后端服务...', 'info');
+
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'password'
+                    })
+                });
+
+                console.log('登录响应状态:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    showStatus('✅ 登录成功！欢迎使用 Visit Tracker 管理后台', 'success');
+                    loadWebsites();
+                } else {
+                    const errorData = await response.json();
+                    showStatus(`❌ 登录失败: ${errorData.error || '未知错误'}`, 'error');
+                    console.error('登录失败:', errorData);
+                }
+            } catch (error) {
+                showStatus(`❌ 连接失败: ${error.message}`, 'error');
+                console.error('连接错误:', error);
+            }
+        }
+
+        // 加载网站列表
+        async function loadWebsites() {
+            try {
+                const response = await fetch(`${API_BASE}/websites`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayWebsites(data.websites);
+                } else {
+                    showStatus('获取网站列表失败', 'error');
+                }
+            } catch (error) {
+                showStatus('获取网站列表失败：' + error.message, 'error');
+            }
+        }
+
+        // 显示网站列表
+        function displayWebsites(websites) {
+            const container = document.getElementById('websites-list');
+            
+            if (websites.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">暂无网站，请添加第一个网站</p>';
+                return;
+            }
+
+            container.innerHTML = websites.map(website => `
+                <div class="website-item">
+                    <div class="website-header">
+                        <div class="website-info">
+                            <h3>${website.name}</h3>
+                            <div class="domain">${website.domain}</div>
+                        </div>
+                        <div>
+                            <button class="btn" onclick="regenerateKey(${website.id})" title="重新生成 API Key">🔄</button>
+                            <button class="btn btn-danger" onclick="deleteWebsite(${website.id})" title="删除网站">🗑️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="api-key-section">
+                        <div class="api-key-label">API Key</div>
+                        <div class="api-key-container">
+                            <input type="text" class="api-key-input" value="${website.api_key}" readonly>
+                            <button class="btn" onclick="copyToClipboard('${website.api_key}')">复制</button>
+                        </div>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value">${website.today_visits || 0}</div>
+                            <div class="stat-label">今日访问</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${website.today_unique_visitors || 0}</div>
+                            <div class="stat-label">独立访客</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 显示状态消息
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // 显示添加模态框
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('show');
+        }
+
+        // 隐藏添加模态框
+        function hideAddModal() {
+            document.getElementById('addModal').classList.remove('show');
+            document.getElementById('addForm').reset();
+        }
+
+        // 添加网站
+        document.getElementById('addForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('siteName').value;
+            const domain = document.getElementById('siteDomain').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/websites`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ name, domain })
+                });
+
+                if (response.ok) {
+                    showStatus('网站添加成功', 'success');
+                    hideAddModal();
+                    loadWebsites();
+                } else {
+                    const error = await response.json();
+                    showStatus('添加失败：' + error.error, 'error');
+                }
+            } catch (error) {
+                showStatus('添加失败：' + error.message, 'error');
+            }
+        });
+
+        // 重新生成 API Key
+        async function regenerateKey(websiteId) {
+            if (!confirm('确定要重新生成 API Key 吗？旧的 Key 将失效。')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/websites/${websiteId}/regenerate-key`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    showStatus('API Key 重新生成成功', 'success');
+                    loadWebsites();
+                } else {
+                    showStatus('重新生成失败', 'error');
+                }
+            } catch (error) {
+                showStatus('重新生成失败：' + error.message, 'error');
+            }
+        }
+
+        // 删除网站
+        async function deleteWebsite(websiteId) {
+            if (!confirm('确定要删除这个网站吗？此操作不可恢复。')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/websites/${websiteId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    showStatus('网站删除成功', 'success');
+                    loadWebsites();
+                } else {
+                    showStatus('删除失败', 'error');
+                }
+            } catch (error) {
+                showStatus('删除失败：' + error.message, 'error');
+            }
+        }
+
+        // 复制到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus('API Key 已复制到剪贴板', 'success');
+            }).catch(() => {
+                showStatus('复制失败，请手动复制', 'error');
+            });
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideAddModal();
+            }
+        });
+    </script>
+</body>
+</html>
