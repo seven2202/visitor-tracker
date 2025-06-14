@@ -1,6 +1,6 @@
 # 多阶段构建 Dockerfile
 # 阶段 1: 构建前端
-FROM node:18-alpine AS frontend-builder
+FROM --platform=$BUILDPLATFORM node:18-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
@@ -44,10 +44,16 @@ RUN if [ -f pnpm-lock.yaml ]; then \
 # 阶段 3: 生产镜像
 FROM node:18-alpine AS production
 
+# 设置架构变量
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN echo "Building for $TARGETPLATFORM on $BUILDPLATFORM"
+
 # 安装必要的系统包
 RUN apk add --no-cache \
     curl \
-    postgresql-client
+    postgresql-client \
+    dumb-init
 
 # 创建应用用户
 RUN addgroup -g 1001 -S nodejs && \
@@ -76,6 +82,9 @@ EXPOSE 3000
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:3000/health || exit 1
+
+# 使用 dumb-init 作为 PID 1
+ENTRYPOINT ["dumb-init", "--"]
 
 # 启动命令
 CMD ["node", "src/app.js"]

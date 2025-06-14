@@ -164,20 +164,33 @@ server {
 
 ### 常见问题
 
-1. **端口被占用**
+1. **架构不匹配错误** `exec format error`
+   ```bash
+   # 方案一：使用修复脚本
+   ./fix-docker.sh
+
+   # 方案二：使用简化构建
+   ./build-simple.sh
+   docker-compose -f docker-compose.prod.yml up -d
+
+   # 方案三：手动指定架构
+   docker build --platform linux/amd64 -t seven222/visit-tracker:latest .
+   ```
+
+2. **端口被占用**
    ```bash
    # 修改 docker-compose.prod.yml 中的端口映射
    ports:
      - "8080:3000"
    ```
 
-2. **数据库连接失败**
+3. **数据库连接失败**
    ```bash
    # 检查数据库状态
    docker-compose -f docker-compose.prod.yml logs postgres
    ```
 
-3. **内存不足**
+4. **内存不足**
    ```bash
    # 增加 Docker 内存限制或清理无用镜像
    docker system prune -a
