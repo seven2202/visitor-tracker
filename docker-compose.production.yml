@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  app:
+    image: seven222/visit-tracker:v1.0.1-amd64
+    container_name: visit-tracker-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: visit_tracker
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      API_KEY_PREFIX: sk-vt
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - visit-tracker-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: visit-tracker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: visit_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d visit_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - visit-tracker-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: visit-tracker-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis123} --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - visit-tracker-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  visit-tracker-network:
+    driver: bridge
