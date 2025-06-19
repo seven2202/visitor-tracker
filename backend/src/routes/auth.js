@@ -1,5 +1,5 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { getDB } = require('../utils/database');
 const { validateUserLogin, validateUserRegistration } = require('../middleware/validation');
@@ -7,28 +7,54 @@ const { loginLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
-// 用户登录（临时禁用速率限制用于开发测试）
+// MD5 密码哈希函数
+function hashPassword(password) {
+  return crypto.createHash('md5').update(password).digest('hex');
+}
+
+// 用户登录
 router.post('/login', validateUserLogin, async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log(`🔐 Login attempt for username: ${username}`);
+
     const db = getDB();
 
     // 查找用户
+    console.log(`📊 Executing query: SELECT * FROM users WHERE username = '${username}' AND is_active = true`);
     const result = await db.query(
       'SELECT * FROM users WHERE username = $1 AND is_active = true',
       [username]
     );
 
+    console.log(`📋 Query result: Found ${result.rows.length} users`);
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      console.log(`👤 User found: ID=${user.id}, Username=${user.username}, Email=${user.email}, Active=${user.is_active}, Role=${user.role}`);
+      console.log(`🔑 Password hash from DB: ${user.password_hash}`);
+    }
+
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      console.log(`❌ No user found with username: ${username}`);
+      return res.status(401).json({ error: 'User not found or inactive' });
     }
 
     const user = result.rows[0];
 
-    // 验证密码
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    // 验证密码 (使用MD5)
+    console.log(`🔍 Comparing password '${password}' with hash '${user.password_hash}'`);
+
+    // 生成输入密码的MD5哈希
+    const inputPasswordHash = hashPassword(password);
+    console.log(`� Input password MD5: ${inputPasswordHash}`);
+    console.log(`� Stored password hash: ${user.password_hash}`);
+
+    const isValidPassword = inputPasswordHash === user.password_hash;
+    console.log(`✅ Password validation result: ${isValidPassword}`);
+
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      console.log(`❌ Password incorrect for user: ${username}`);
+      return res.status(401).json({ error: 'Password is incorrect' });
     }
 
     // 生成 JWT
@@ -80,9 +106,8 @@ router.post('/register', validateUserRegistration, async (req, res) => {
       return res.status(409).json({ error: 'Username or email already exists' });
     }
 
-    // 加密密码
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    // 加密密码 (使用MD5)
+    const passwordHash = hashPassword(password);
 
     // 创建用户
     const result = await db.query(`
@@ -168,15 +193,15 @@ router.post('/change-password', async (req, res) => {
 
     const user = userResult.rows[0];
 
-    // 验证当前密码
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
+    // 验证当前密码 (使用MD5)
+    const currentPasswordHash = hashPassword(currentPassword);
+    const isValidPassword = currentPasswordHash === user.password_hash;
     if (!isValidPassword) {
       return res.status(400).json({ error: 'Current password is incorrect' });
     }
 
-    // 加密新密码
-    const saltRounds = 10;
-    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+    // 加密新密码 (使用MD5)
+    const newPasswordHash = hashPassword(newPassword);
 
     // 更新密码
     await db.query(

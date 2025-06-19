@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visit Tracker 统计示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .demo-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .stats-display {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a87;
+        }
+        .code-block {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Visit Tracker 统计示例</h1>
+    
+    <div class="demo-section">
+        <h2>📊 当前页面统计</h2>
+        <p>这个页面已经集成了 Visit Tracker 统计代码，正在实时收集访问数据。</p>
+        
+        <div id="tracking-status" class="status">
+            正在初始化统计...
+        </div>
+        
+        <div class="stats-display">
+            <h3>实时统计信息</h3>
+            <p><strong>访客ID:</strong> <span id="visitor-id">-</span></p>
+            <p><strong>会话ID:</strong> <span id="session-id">-</span></p>
+            <p><strong>页面停留时间:</strong> <span id="duration">0</span> 秒</p>
+            <p><strong>在线用户数:</strong> <span id="online-users">-</span></p>
+        </div>
+        
+        <button onclick="refreshOnlineUsers()">刷新在线用户数</button>
+        <button onclick="simulatePageView()">模拟页面访问</button>
+    </div>
+
+    <div class="demo-section">
+        <h2>📝 集成代码示例</h2>
+        
+        <h3>方式一：基础集成</h3>
+        <div class="code-block">
+&lt;!-- 在页面 &lt;head&gt; 或 &lt;/body&gt; 前添加以下代码 --&gt;
+&lt;script&gt;
+(function() {
+    // 配置您的 API Key
+    const API_KEY = 'your-api-key-here';
+    const TRACKER_URL = 'https://visitor.fllai.cn';
+    
+    // 加载统计脚本
+    const script = document.createElement('script');
+    script.src = TRACKER_URL + '/sdk/tracker.js';
+    script.onload = function() {
+        // 初始化统计
+        VisitTracker.init(API_KEY, {
+            trackPageViews: true,
+            trackClicks: true,
+            trackScrolling: true,
+            debug: true
+        });
+    };
+    document.head.appendChild(script);
+})();
+&lt;/script&gt;
+        </div>
+
+        <h3>方式二：异步加载</h3>
+        <div class="code-block">
+&lt;script async&gt;
+window.vtq = window.vtq || [];
+window.vtq.push(['init', 'your-api-key-here']);
+window.vtq.push(['track', 'pageview']);
+
+(function() {
+    const vt = document.createElement('script');
+    vt.type = 'text/javascript';
+    vt.async = true;
+    vt.src = 'https://visitor.fllai.cn/sdk/tracker.js';
+    const s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(vt, s);
+})();
+&lt;/script&gt;
+        </div>
+
+        <h3>方式三：手动事件追踪</h3>
+        <div class="code-block">
+&lt;script&gt;
+// 追踪自定义事件
+function trackCustomEvent(eventName, data) {
+    if (window.VisitTracker) {
+        VisitTracker.track('event', {
+            name: eventName,
+            data: data
+        });
+    }
+}
+
+// 使用示例
+trackCustomEvent('button_click', { button: 'download' });
+trackCustomEvent('form_submit', { form: 'contact' });
+&lt;/script&gt;
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🔧 高级配置</h2>
+        
+        <h3>UTM 参数追踪</h3>
+        <p>自动追踪 URL 中的 UTM 参数：</p>
+        <div class="code-block">
+// 示例 URL：
+// https://yoursite.com?utm_source=google&utm_medium=cpc&utm_campaign=summer
+// 这些参数会自动被追踪并记录
+        </div>
+
+        <h3>自定义配置选项</h3>
+        <div class="code-block">
+VisitTracker.init('your-api-key', {
+    // 基础配置
+    trackPageViews: true,        // 追踪页面浏览
+    trackClicks: true,           // 追踪点击事件
+    trackScrolling: true,        // 追踪滚动行为
+    
+    // 高级配置
+    sessionTimeout: 30,          // 会话超时时间（分钟）
+    heartbeatInterval: 15,       // 心跳间隔（秒）
+    debug: false,                // 调试模式
+    
+    // 过滤配置
+    ignoreOwnVisits: true,       // 忽略自己的访问
+    ignoreBots: true,            // 忽略机器人访问
+    
+    // 回调函数
+    onTrack: function(data) {
+        console.log('统计数据已发送:', data);
+    },
+    onError: function(error) {
+        console.error('统计错误:', error);
+    }
+});
+        </div>
+    </div>
+
+    <!-- Visit Tracker 统计代码 -->
+    <script>
+    (function() {
+        // 请替换为您的实际 API Key
+        const API_KEY = 'sk-demo1234567890abcdef1234567890abcdef';
+        const TRACKER_URL = 'https://visitor.fllai.cn';
+        
+        // 模拟统计功能（因为我们还没有真实的 API Key）
+        window.VisitTracker = {
+            visitorId: 'demo-visitor-' + Math.random().toString(36).substr(2, 9),
+            sessionId: 'demo-session-' + Math.random().toString(36).substr(2, 9),
+            startTime: Date.now(),
+            
+            init: function(apiKey, options) {
+                console.log('Visit Tracker 初始化成功');
+                document.getElementById('tracking-status').className = 'status success';
+                document.getElementById('tracking-status').textContent = '✅ 统计已启用';
+                
+                document.getElementById('visitor-id').textContent = this.visitorId;
+                document.getElementById('session-id').textContent = this.sessionId;
+                
+                this.startDurationTimer();
+                this.trackPageView();
+            },
+            
+            trackPageView: function() {
+                console.log('页面浏览已记录');
+                // 这里会发送数据到您的统计服务器
+            },
+            
+            startDurationTimer: function() {
+                setInterval(() => {
+                    const duration = Math.floor((Date.now() - this.startTime) / 1000);
+                    document.getElementById('duration').textContent = duration;
+                }, 1000);
+            }
+        };
+        
+        // 初始化
+        VisitTracker.init(API_KEY, {
+            trackPageViews: true,
+            trackClicks: true,
+            debug: true
+        });
+        
+        // 全局函数
+        window.refreshOnlineUsers = function() {
+            // 模拟在线用户数
+            const onlineUsers = Math.floor(Math.random() * 50) + 1;
+            document.getElementById('online-users').textContent = onlineUsers;
+        };
+        
+        window.simulatePageView = function() {
+            console.log('模拟页面访问');
+            alert('页面访问已记录！请查看控制台日志。');
+        };
+        
+        // 初始化在线用户数
+        refreshOnlineUsers();
+    })();
+    </script>
+</body>
+</html>

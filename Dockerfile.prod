@@ -1,0 +1,79 @@
+# Visit Tracker 生产环境 Dockerfile
+# 多阶段构建：前端构建 + 后端运行
+
+# 阶段1: 构建前端
+FROM node:18-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# 复制前端依赖文件
+COPY frontend/package*.json ./
+COPY frontend/pnpm-lock.yaml* ./
+
+# 安装前端依赖
+RUN if [ -f pnpm-lock.yaml ]; then \
+        npm install -g pnpm && pnpm install; \
+    else \
+        npm ci; \
+    fi
+
+# 复制前端源码
+COPY frontend/ ./
+
+# 构建前端
+RUN if [ -f pnpm-lock.yaml ]; then \
+        pnpm run build; \
+    else \
+        npm run build; \
+    fi
+
+# 阶段2: 生产环境运行时
+FROM node:18-alpine AS production
+
+# 安装必要的系统包
+RUN apk add --no-cache curl postgresql-client
+
+# 创建应用用户
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制后端依赖文件
+COPY backend/package*.json ./
+
+# 安装生产依赖
+RUN npm ci --omit=dev && \
+    npm cache clean --force
+
+# 复制后端源码
+COPY backend/src ./src
+COPY backend/migrations ./migrations
+
+# 复制前端构建文件
+COPY --from=frontend-builder /app/frontend/dist ./public
+
+# 复制 SDK 文件
+COPY tracker-sdk ./public/sdk
+
+# 复制生产环境启动文件
+COPY server.prod.js ./server.js
+
+# 创建必要的目录并设置权限
+RUN mkdir -p /app/data /app/logs && \
+    chown -R nodejs:nodejs /app && \
+    chmod -R 755 /app
+
+# 切换到非 root 用户
+USER nodejs
+
+# 暴露端口
+EXPOSE 3000
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# 启动命令
+CMD ["node", "server.js"]

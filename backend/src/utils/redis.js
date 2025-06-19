@@ -4,7 +4,7 @@ let client;
 
 const connectRedis = async () => {
   try {
-    client = redis.createClient({
+    const redisConfig = {
       socket: {
         host: process.env.REDIS_HOST || 'localhost',
         port: process.env.REDIS_PORT || 6379,
@@ -15,19 +15,40 @@ const connectRedis = async () => {
           return Math.min(retries * 100, 3000);
         }
       }
+    };
+
+    // 如果设置了 Redis 密码，添加认证
+    if (process.env.REDIS_PASSWORD) {
+      redisConfig.password = process.env.REDIS_PASSWORD;
+      console.log('🔐 Redis password configured');
+    } else {
+      console.log('⚠️  No Redis password configured');
+    }
+
+    console.log('🔗 Connecting to Redis with config:', {
+      host: redisConfig.socket.host,
+      port: redisConfig.socket.port,
+      hasPassword: !!redisConfig.password
     });
 
+    client = redis.createClient(redisConfig);
+
     client.on('error', (err) => {
-      console.error('Redis Client Error:', err);
+      console.error('❌ Redis Client Error:', err);
     });
 
     client.on('connect', () => {
-      console.log('Redis Client Connected');
+      console.log('✅ Redis Client Connected');
+    });
+
+    client.on('ready', () => {
+      console.log('🚀 Redis Client Ready');
     });
 
     await client.connect();
+    console.log('✅ Redis connection established');
   } catch (error) {
-    console.error('Redis connection failed:', error);
+    console.error('❌ Redis connection failed:', error);
     throw error;
   }
 };

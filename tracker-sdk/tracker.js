@@ -1,10 +1,13 @@
 (function() {
   'use strict';
 
+  // Visit Tracker v1.0.1
+  console.log('Visit Tracker v1.0.1 loaded');
+
   // 配置
   const config = {
-    apiUrl: window.VISIT_TRACKER_API || 'http://localhost/api/track',
-    apiKey: window.VISIT_TRACKER_KEY || '',
+    apiUrl: 'https://visitor.fllai.cn/api/track',
+    apiKey: null,
     debug: window.VISIT_TRACKER_DEBUG || false
   };
 
